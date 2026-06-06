@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>小学数学</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: #f0f2f8;
+      color: #2d2d2d;
+      min-height: 100vh;
+    }
+
+    /* ── 顶部 ── */
+    .header {
+      background: linear-gradient(135deg, #4f7cff 0%, #7c4fff 100%);
+      color: white;
+      padding: 24px 20px 20px;
+      text-align: center;
+    }
+    .header h1 { font-size: 1.4rem; letter-spacing: 2px; }
+    .header p  { font-size: 0.78rem; opacity: 0.75; margin-top: 6px; }
+
+    /* ── 学期 Tab ── */
+    .season-bar {
+      background: white;
+      display: flex;
+      border-bottom: 1px solid #e8eaf0;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .season-bar::-webkit-scrollbar { display: none; }
+
+    .s-tab {
+      flex: 0 0 auto;
+      padding: 14px 22px;
+      font-size: 0.88rem;
+      color: #888;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+    .s-tab.active {
+      color: #4f7cff;
+      border-bottom-color: #4f7cff;
+      font-weight: 700;
+    }
+
+    /* ── 内容区 ── */
+    .season-panel { display: none; }
+    .season-panel.active { display: block; }
+
+    .content {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 16px 12px 40px;
+    }
+
+    /* ── 年级卡片 ── */
+    .grade-card {
+      background: white;
+      border-radius: 14px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    }
+
+    .grade-hd {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 18px;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .grade-hd:active { background: #fafafa; }
+
+    .grade-badge {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.88rem; color: white;
+      flex-shrink: 0;
+    }
+    .g1 { background: #ff6b6b; }
+    .g2 { background: #ff9f43; }
+    .g3 { background: #1dd1a1; }
+    .g4 { background: #4f7cff; }
+    .g5 { background: #9b59b6; }
+    .g6 { background: #ee5a24; }
+
+    .grade-title { font-weight: 700; font-size: 1rem; flex: 1; }
+    .grade-count  { font-size: 0.75rem; color: #aaa; }
+    .chevron {
+      width: 18px; height: 18px;
+      fill: none; stroke: #bbb; stroke-width: 2.5;
+      stroke-linecap: round; stroke-linejoin: round;
+      transition: transform .25s;
+    }
+    .grade-card.open .chevron { transform: rotate(90deg); }
+
+    .grade-bd { display: none; padding: 0 10px 10px; }
+    .grade-card.open .grade-bd { display: block; }
+
+    /* ── 课程类型 ── */
+    .cat-item {
+      border-radius: 10px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    .cat-hd {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      border-radius: 10px;
+      transition: background .15s;
+    }
+    .cat-hd:active { background: #f0f2f8; }
+
+    .cat-icon {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .cat-z .cat-hd { background: #fff4f4; }
+    .cat-z .cat-icon { background: #ffdede; }
+    .cat-j .cat-hd { background: #fffbf0; }
+    .cat-j .cat-icon { background: #ffe8b0; }
+    .cat-c .cat-hd { background: #f0f6ff; }
+    .cat-c .cat-icon { background: #cfe0ff; }
+
+    .cat-z.open .cat-hd { background: #ffe8e8; }
+    .cat-j.open .cat-hd { background: #fff0cc; }
+    .cat-c.open .cat-hd { background: #ddeeff; }
+
+    .cat-name { font-size: 0.88rem; font-weight: 600; flex: 1; }
+    .cat-chevron {
+      width: 15px; height: 15px;
+      fill: none; stroke: #bbb; stroke-width: 2.5;
+      stroke-linecap: round; stroke-linejoin: round;
+      transition: transform .25s;
+    }
+    .cat-item.open .cat-chevron { transform: rotate(90deg); }
+
+    .cat-bd { display: none; padding: 8px 6px 4px; }
+    .cat-item.open .cat-bd { display: block; }
+
+    /* ── 讲次网格 ── */
+    .lesson-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+    }
+    @media (min-width: 480px) {
+      .lesson-grid { grid-template-columns: repeat(6, 1fr); }
+    }
+
+    .lesson-btn {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 9px 4px;
+      border-radius: 9px;
+      text-decoration: none;
+      background: white;
+      border: 1.5px solid #e6eaff;
+      color: #4f7cff;
+      font-size: 0.75rem;
+      font-weight: 600;
+      line-height: 1.3;
+      transition: all .18s;
+      cursor: pointer;
+    }
+    .lesson-btn .lnum { font-size: 1rem; font-weight: 800; }
+    .lesson-btn:hover  { background: #4f7cff; color: white; border-color: #4f7cff; }
+    .lesson-btn:active { transform: scale(0.95); }
+
+    /* 链接为空时显示锁定样式 */
+    .lesson-btn[href="#"] {
+      color: #bbb;
+      border-color: #e8eaee;
+      border-style: dashed;
+      cursor: default;
+    }
+    .lesson-btn[href="#"]:hover { background: white; color: #bbb; border-color: #e8eaee; }
+
+    /* ── 空状态 ── */
+    .empty-tip {
+      text-align: center;
+      color: #bbb;
+      font-size: 0.82rem;
+      padding: 40px 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📐 小学数学</h1>
+  <p>选择学期 → 年级 → 课程类型 → 讲次</p>
+</div>
+
+<!-- 学期 Tab -->
+<div class="season-bar" id="seasonBar"></div>
+
+<!-- 内容区（由 JS 渲染） -->
+<div id="app"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  ✏️  在这里填写视频链接
+//  格式：在对应位置把 "" 改为实际 URL
+//  示例："https://video.example.com/xxx"
+// ═══════════════════════════════════════════════
+const DATA = {
+  "暑假": {
+    icon: "☀️",
+    grades: {
+      "一年级": {
+        "重难点预习": ["","","","","","","","","","","",""],
+        "加油站":     ["","","","","","","","","","","",""],
+        "创新挑战":   ["","","","","","","","","","","",""]
+      },
+      "二年级": {
+        "重难点预习": ["","","","","","","","","","","",""],
+        "加油站":     ["","","","","","","","","","","",""],
+        "创新挑战":   ["","","","","","","","","","","",""]
+      },
+      "三年级": {
+        "重难点预习": ["","","","","","","","","","","",""],
+        "加油站":     ["","","","","","","","","","","",""],
+        "创新挑战":   ["","","","","","","","","","","",""]
+      },
+      "四年级": {
+        "重难点预习": ["","","","","","","","","","","",""],
+        "加油站":     ["","","","","","","","","","","",""],
+        "创新挑战":   ["","","","","","","","","","","",""]
+      },
+      "五年级": {
+        "重难点预习": ["","","","","","","","","","","",""],
+        "加油站":     ["","","","","","","","","","","",""],
+        "创新挑战":   ["","","","","","","","","","","",""]
+      },
+      "六年级": {
+        "重难点预习": ["","","","","","","","","","","",""],
+        "加油站":     ["","","","","","","","","","","",""],
+        "创新挑战":   ["","","","","","","","","","","",""]
+      }
+    }
+  }
+  // 后续可继续添加学期，例如：
+  // "秋季": { icon: "🍂", grades: { ... } },
+  // "寒假": { icon: "❄️", grades: { ... } },
+  // "春季": { icon: "🌸", grades: { ... } }
+};
+
+// ═══════════════════════════════════════════════
+//  以下为渲染逻辑，无需修改
+// ═══════════════════════════════════════════════
+const GRADE_COLORS = ["g1","g2","g3","g4","g5","g6"];
+const CAT_META = {
+  "重难点预习": { cls: "cat-z", emoji: "🎯" },
+  "加油站":     { cls: "cat-j", emoji: "⛽" },
+  "创新挑战":   { cls: "cat-c", emoji: "🚀" }
+};
+const SVG_CHEVRON = (cls) =>
+  `<svg class="${cls}" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>`;
+
+function renderSeason(seasonName, seasonData) {
+  const grades = Object.entries(seasonData.grades);
+  let html = `<div class="content">`;
+  grades.forEach(([gradeName, cats], gi) => {
+    const colorCls = GRADE_COLORS[gi] || "g1";
+    const shortName = gradeName.replace("年级", "");
+    html += `
+    <div class="grade-card" id="gc-${seasonName}-${gi}">
+      <div class="grade-hd" onclick="toggleGrade('gc-${seasonName}-${gi}')">
+        <div class="grade-badge ${colorCls}">${shortName}</div>
+        <div class="grade-title">${gradeName}</div>
+        <div class="grade-count">3 类 · 36 讲</div>
+        ${SVG_CHEVRON("chevron")}
+      </div>
+      <div class="grade-bd">`;
+    Object.entries(cats).forEach(([catName, links], ci) => {
+      const meta = CAT_META[catName] || { cls: "cat-z", emoji: "📖" };
+      const catId = `cat-${seasonName}-${gi}-${ci}`;
+      html += `
+        <div class="cat-item ${meta.cls}" id="${catId}">
+          <div class="cat-hd" onclick="toggleCat('${catId}')">
+            <div class="cat-icon">${meta.emoji}</div>
+            <div class="cat-name">${catName}</div>
+            ${SVG_CHEVRON("cat-chevron")}
+          </div>
+          <div class="cat-bd">
+            <div class="lesson-grid">`;
+      links.forEach((url, li) => {
+        const href = url || "#";
+        html += `<a class="lesson-btn" href="${href}"${url ? ' target="_blank" rel="noopener"' : ''}>
+          <span class="lnum">${li+1}</span>讲
+        </a>`;
+      });
+      html += `</div></div></div>`;
+    });
+    html += `</div></div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+function toggleGrade(id) {
+  document.getElementById(id).classList.toggle("open");
+}
+function toggleCat(id) {
+  document.getElementById(id).classList.toggle("open");
+}
+
+// 渲染 Tab + 面板
+const bar = document.getElementById("seasonBar");
+const app = document.getElementById("app");
+const seasons = Object.entries(DATA);
+let activeIdx = 0;
+
+seasons.forEach(([name, data], i) => {
+  // Tab
+  const tab = document.createElement("div");
+  tab.className = "s-tab" + (i === 0 ? " active" : "");
+  tab.textContent = `${data.icon} ${name}`;
+  tab.onclick = () => switchSeason(i);
+  bar.appendChild(tab);
+
+  // Panel
+  const panel = document.createElement("div");
+  panel.className = "season-panel" + (i === 0 ? " active" : "");
+  panel.id = `panel-${i}`;
+  panel.innerHTML = renderSeason(name, data);
+  app.appendChild(panel);
+});
+
+function switchSeason(idx) {
+  if (idx === activeIdx) return;
+  document.querySelectorAll(".s-tab")[activeIdx].classList.remove("active");
+  document.getElementById(`panel-${activeIdx}`).classList.remove("active");
+  activeIdx = idx;
+  document.querySelectorAll(".s-tab")[activeIdx].classList.add("active");
+  document.getElementById(`panel-${activeIdx}`).classList.add("active");
+}
+</script>
+</body>
+</html>
