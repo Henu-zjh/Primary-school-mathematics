@@ -668,10 +668,10 @@ function renderSeason(seasonName, seasonData) {
             <span class="lnum">${li+1}</span>讲
           </a>`;
         } else {
-          // 弹窗型：始终可点，子项是否有链接在弹窗内显示
+          // 弹窗型：有链接才可点，否则置灰
           const dataStr = encodeURIComponent(JSON.stringify(entry));
-          html += `<button class="lesson-btn"
-            onclick="openSheet(this,'${lessonLabel}','${catName}')"
+          html += `<button class="lesson-btn${hasLink ? "" : " empty"}"
+            ${hasLink ? `onclick="openSheet(this,'${lessonLabel}','${catName}')"` : "disabled"}
             data-sub="${dataStr}">
             <span class="lnum">${li+1}</span>讲
           </button>`;
