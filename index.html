@@ -690,6 +690,20 @@ function renderSeason(seasonName, seasonData) {
 // ── 弹窗逻辑 ──
 function openSheet(btn, lessonName, catName) {
   const entry = JSON.parse(decodeURIComponent(btn.dataset.sub));
+
+  // 收集所有有效子链接
+  const validLinks = Object.entries(entry).filter(([, url]) => !!url);
+
+  // 只有 1 个有效链接 → 直接跳转，不弹窗
+  if (validLinks.length === 1) {
+    window.open(validLinks[0][1], "_blank", "noopener");
+    return;
+  }
+
+  // 0 个有效链接 → 不响应
+  if (validLinks.length === 0) return;
+
+  // 2 个及以上 → 弹出选择面板
   document.getElementById("sheetLessonName").textContent = lessonName;
   document.getElementById("sheetCatName").textContent = catName;
 
